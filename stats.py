@@ -4,6 +4,8 @@
 # -*- coding: utf-8 -*-
 
 import time
+import locale
+from datetime import datetime
 import subprocess
 import digitalio
 import board
@@ -11,6 +13,10 @@ from PIL import Image, ImageDraw, ImageFont
 import adafruit_rgb_display.st7789 as st7789
 from commands import *
 from cycle import Cycle
+
+# Set locale to current country
+# OS must have it installed, in raspberry pi os -> dpkg-reconfigure locales
+locale.setlocale(locale.LC_ALL, "es_ES.UTF_8")
 
 # Configuration for CS and DC pins (these are FeatherWing defaults on M0/M4):
 cs_pin = digitalio.DigitalInOut(board.CE0)
@@ -57,7 +63,7 @@ bottom = height - padding
 # Move left to right keeping track of the current x position for drawing shapes.
 x = 0
 
-font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 24)
+font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 18)
 
 # Turn on the backlight
 backlight = digitalio.DigitalInOut(board.D22)
@@ -80,24 +86,25 @@ current = mycycle.current()
 computer = Command(current)
 
 def reload_current_computer():
-    if buttonPrev.value:
-        buttonPrev.pull = digitalio.Pull.DOWN
+    global computer
+    if buttonPrev.value and not buttonNext.value:
         computer.end()
         current = mycycle.prev()
         computer = Command(current)
-    elif buttonNext.value:
-        buttonNext.pull = digitalio.Pull.DOWN
+    elif buttonNext.value and not buttonPrev.value:
         computer.end()
         current = mycycle.next()
         computer = Command(current)
 
-def write_in_screen(IP, CPU, MemUsage, Disk, Temp):
+def write_in_screen(date, IP, CPU, MemUsage, Disk, Temp):
     # Draw a black filled box to clear the image.
     draw.rectangle((0, 0, width, height), outline=0, fill=0)
 
     # Write four lines of text.
     y = top
-    draw.text((x, y), IP, font=font, fill="#FFFFFF")
+    draw.text((x, y), date, font=font, fill="#FFFFFF")
+    y += font.getsize(date)[1]
+    draw.text((x, y), IP, font=font, fill="#FF0000")
     y += font.getsize(IP)[1]
     draw.text((x, y), CPU, font=font, fill="#FFFF00")
     y += font.getsize(CPU)[1]
@@ -110,7 +117,8 @@ def write_in_screen(IP, CPU, MemUsage, Disk, Temp):
     # Display image.
     disp.image(image, rotation)
 
-def write_in_terminal(IP, CPU, MemUsage, Disk, Temp):
+def write_in_terminal(date, IP, CPU, MemUsage, Disk, Temp):
+    print(date)
     print(IP)
     print(CPU)
     print(MemUsage)
@@ -118,14 +126,21 @@ def write_in_terminal(IP, CPU, MemUsage, Disk, Temp):
     print(Temp)
 
 while True:
-    reload_current_computer()
-    IP = computer.hostname()
-    CPU = computer.cpuload()
-    MemUsage = computer.memory()
-    Disk = computer.disk()
-    Temp = computer.temperatura()
+    try:
+        flag = open("/home/javi/tmp/FLAG", "r")
+        draw.rectangle((0, 0, width, height), outline=0, fill=0)
+        disp.image(image, rotation)
+        time.sleep(30)
+    except:
+        date = datetime.now().strftime("%c")
+        reload_current_computer()
+        IP = computer.hostname()
+        CPU = computer.cpuload()
+        MemUsage = computer.memory()
+        Disk = computer.disk()
+        Temp = computer.temperatura()
 
-    write_in_screen(IP, CPU, MemUsage, Disk, Temp)
-    write_in_terminal(IP, CPU, MemUsage, Disk, Temp)
+        write_in_screen(date, IP, CPU, MemUsage, Disk, Temp)
+#        write_in_terminal(date, IP, CPU, MemUsage, Disk, Temp)
 
-    time.sleep(1)
+        time.sleep(1)
