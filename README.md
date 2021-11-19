@@ -22,6 +22,9 @@ Para poder empezar a mostrar la información se aconseja empezar primero mostrar
 terminal, para ello tenemos que comentar la linea que llama a la función de mostrar en la pantalla y
 descomentar la que muestra la información en la terminal
 
+Para poder asignar los servidores de los que queremos mostrar la información, sólo tenemos que 
+cambiar el valor del set `computers` del fichero `computer.py` siguiendo los ejemplos que tenemos
+
 Una vez decidido dónde queremos mostrar la información, solo tenemos que ejecutar `python3 stats.py`
 
 Si queremos que esto se ejecute al inicio de nuestra raspberry, solo tenemos que añadir la siguiente

@@ -11,8 +11,7 @@ import digitalio
 import board
 from PIL import Image, ImageDraw, ImageFont
 import adafruit_rgb_display.st7789 as st7789
-from commands import *
-from cycle import Cycle
+from computer import current_computer
 
 # Set locale to current country
 # OS must have it installed, in raspberry pi os -> dpkg-reconfigure locales
@@ -74,28 +73,6 @@ buttonNext = digitalio.DigitalInOut(board.D24)
 buttonPrev.switch_to_input()
 buttonNext.switch_to_input()
 
-computers = (
-    "",
-    "javi@raspberrypi",
-    "pi@retropie",
-    "javi@zeropi"
-)
-
-mycycle = Cycle(computers)
-current = mycycle.current()
-computer = Command(current)
-
-def reload_current_computer():
-    global computer
-    if buttonPrev.value and not buttonNext.value:
-        computer.end()
-        current = mycycle.prev()
-        computer = Command(current)
-    elif buttonNext.value and not buttonPrev.value:
-        computer.end()
-        current = mycycle.next()
-        computer = Command(current)
-
 def write_in_screen(date, IP, CPU, MemUsage, Disk, Temp):
     # Draw a black filled box to clear the image.
     draw.rectangle((0, 0, width, height), outline=0, fill=0)
@@ -133,7 +110,7 @@ while True:
         time.sleep(30)
     except:
         date = datetime.now().strftime("%c")
-        reload_current_computer()
+        computer = current_computer(buttonPrev, buttonNext)
         IP = computer.hostname()
         CPU = computer.cpuload()
         MemUsage = computer.memory()
