@@ -3,9 +3,9 @@ from cycle import Cycle
 
 computers = (
     "",
+    "javi@zero2pi",
     "javi@raspberrypi",
     "pi@retropie",
-    "javi@zeropi"
 )
 
 mycycle = Cycle(computers)

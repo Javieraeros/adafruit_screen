@@ -12,6 +12,7 @@ import board
 from PIL import Image, ImageDraw, ImageFont
 import adafruit_rgb_display.st7789 as st7789
 from computer import current_computer
+from multiprocessing import Process
 
 # Set locale to current country
 # OS must have it installed, in raspberry pi os -> dpkg-reconfigure locales
@@ -102,22 +103,30 @@ def write_in_terminal(date, IP, CPU, MemUsage, Disk, Temp):
     print(Disk)
     print(Temp)
 
-while True:
-    try:
-        flag = open("/home/javi/tmp/FLAG", "r")
-        draw.rectangle((0, 0, width, height), outline=0, fill=0)
-        disp.image(image, rotation)
-        time.sleep(30)
-    except:
-        date = datetime.now().strftime("%c")
-        computer = current_computer(buttonPrev, buttonNext)
-        IP = computer.hostname()
-        CPU = computer.cpuload()
-        MemUsage = computer.memory()
-        Disk = computer.disk()
-        Temp = computer.temperatura()
+def get_data_and_paint(computer):
+    date = datetime.now().strftime("%c")
+    IP = computer.hostname()
+    CPU = computer.cpuload()
+    MemUsage = computer.memory()
+    Disk = computer.disk()
+    Temp = computer.temperatura()
 
-        write_in_screen(date, IP, CPU, MemUsage, Disk, Temp)
-#        write_in_terminal(date, IP, CPU, MemUsage, Disk, Temp)
+    write_in_screen(date, IP, CPU, MemUsage, Disk, Temp)
+#   write_in_terminal(date, IP, CPU, MemUsage, Disk, Temp)
 
-        time.sleep(1)
+    time.sleep(2)
+
+def main():
+    while True:
+        try:
+            flag = open("/home/javi/tmp/FLAG", "r")
+            draw.rectangle((0, 0, width, height), outline=0, fill=0)
+            disp.image(image, rotation)
+            time.sleep(30)
+        except Exception:
+            computer = current_computer(buttonPrev, buttonNext)
+            get_data_and_paint(computer)
+
+
+if __name__ == '__main__':
+    main()
