@@ -12,7 +12,7 @@ import board
 from PIL import Image, ImageDraw, ImageFont
 import adafruit_rgb_display.st7789 as st7789
 from computer import current_computer
-from multiprocessing import Process
+from multiprocessing import Process, Pipe
 
 # Set locale to current country
 # OS must have it installed, in raspberry pi os -> dpkg-reconfigure locales
@@ -116,6 +116,9 @@ def get_data_and_paint(computer):
 
     time.sleep(2)
 
+def get_computer():
+    return current_computer(buttonPrev, buttonNext)
+
 def main():
     while True:
         try:
@@ -124,7 +127,7 @@ def main():
             disp.image(image, rotation)
             time.sleep(30)
         except Exception:
-            computer = current_computer(buttonPrev, buttonNext)
+            computer = get_computer()
             get_data_and_paint(computer)
 
 
