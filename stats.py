@@ -13,6 +13,9 @@ from PIL import Image, ImageDraw, ImageFont
 import adafruit_rgb_display.st7789 as st7789
 from computer import current_computer
 from multiprocessing import Process, Pipe
+from ext_temp import get_temp
+
+SLEEP_TIME = 6
 
 # Set locale to current country
 # OS must have it installed, in raspberry pi os -> dpkg-reconfigure locales
@@ -47,7 +50,7 @@ disp = st7789.ST7789(
 height = disp.width  # we swap height/width to rotate it to landscape!
 width = disp.height
 image = Image.new("RGB", (width, height))
-rotation = 90
+rotation = 270
 
 # Get drawing object to draw on image.
 draw = ImageDraw.Draw(image)
@@ -69,12 +72,12 @@ font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 18)
 backlight = digitalio.DigitalInOut(board.D22)
 backlight.switch_to_output()
 backlight.value = True
-buttonPrev = digitalio.DigitalInOut(board.D23)
-buttonNext = digitalio.DigitalInOut(board.D24)
+buttonPrev = digitalio.DigitalInOut(board.D24)
+buttonNext = digitalio.DigitalInOut(board.D23)
 buttonPrev.switch_to_input()
 buttonNext.switch_to_input()
 
-def write_in_screen(date, IP, CPU, MemUsage, Disk, Temp):
+def write_in_screen(date, IP, CPU, MemUsage, Disk, Temp, extTemp):
     # Draw a black filled box to clear the image.
     draw.rectangle((0, 0, width, height), outline=0, fill=0)
 
@@ -91,6 +94,8 @@ def write_in_screen(date, IP, CPU, MemUsage, Disk, Temp):
     draw.text((x, y), Disk, font=font, fill="#0000FF")
     y += font.getsize(Disk)[1]
     draw.text((x, y), Temp, font=font, fill="#FF00FF")
+    y += font.getsize(extTemp)[1]
+    draw.text((x, y), extTemp, font=font, fill="#00FFFF")
 
     # Display image.
     disp.image(image, rotation)
@@ -110,11 +115,12 @@ def get_data_and_paint(computer):
     MemUsage = computer.memory()
     Disk = computer.disk()
     Temp = computer.temperatura()
+    extTemp = "Ext Temp: " + get_temp()
 
-    write_in_screen(date, IP, CPU, MemUsage, Disk, Temp)
+    write_in_screen(date, IP, CPU, MemUsage, Disk, Temp, extTemp)
 #   write_in_terminal(date, IP, CPU, MemUsage, Disk, Temp)
 
-    time.sleep(2)
+    time.sleep(SLEEP_TIME)
 
 def get_computer():
     return current_computer(buttonPrev, buttonNext)
