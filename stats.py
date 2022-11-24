@@ -77,7 +77,7 @@ buttonNext = digitalio.DigitalInOut(board.D23)
 buttonPrev.switch_to_input()
 buttonNext.switch_to_input()
 
-def write_in_screen(date, IP, CPU, MemUsage, Disk, Temp, extTemp):
+def write_in_screen(date, IP, CPU, MemUsage, Disk, Temp):
     # Draw a black filled box to clear the image.
     draw.rectangle((0, 0, width, height), outline=0, fill=0)
 
@@ -94,8 +94,8 @@ def write_in_screen(date, IP, CPU, MemUsage, Disk, Temp, extTemp):
     draw.text((x, y), Disk, font=font, fill="#0000FF")
     y += font.getsize(Disk)[1]
     draw.text((x, y), Temp, font=font, fill="#FF00FF")
-    y += font.getsize(extTemp)[1]
-    draw.text((x, y), extTemp, font=font, fill="#00FFFF")
+#    y += font.getsize(extTemp)[1]
+#    draw.text((x, y), extTemp, font=font, fill="#00FFFF")
 
     # Display image.
     disp.image(image, rotation)
@@ -115,9 +115,9 @@ def get_data_and_paint(computer):
     MemUsage = computer.memory()
     Disk = computer.disk()
     Temp = computer.temperatura()
-    extTemp = "Ext Temp: " + get_temp()
+ #   extTemp = "Ext Temp: " + get_temp()
 
-    write_in_screen(date, IP, CPU, MemUsage, Disk, Temp, extTemp)
+    write_in_screen(date, IP, CPU, MemUsage, Disk, Temp)
 #   write_in_terminal(date, IP, CPU, MemUsage, Disk, Temp)
 
     time.sleep(SLEEP_TIME)
